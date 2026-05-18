@@ -38,11 +38,11 @@ COL_RAKUTEN_URL  = 2   # B: 楽天URL
 COL_YAHOO_URL    = 3   # C: Yahoo!URL
 COL_AMAZON_URL   = 4   # D: Amazon URL
 COL_MERCARI_URL  = 5   # E: メルカリURL
-COL_RAKUTEN_STS  = 6   # F: 楽天ステータス
-COL_YAHOO_STS    = 7   # G: Yahoo!ステータス
-COL_AMAZON_STS   = 8   # H: Amazonステータス
-COL_MERCARI_STS  = 9   # I: メルカリステータス
-COL_UPDATED_AT   = 10  # J: 最終確認日時
+COL_RAKUTEN_STS  = 8   # H: 楽天ステータス
+COL_YAHOO_STS    = 9   # I: Yahoo!ステータス
+COL_AMAZON_STS   = 10  # J: Amazonステータス
+COL_MERCARI_STS  = 11  # K: メルカリステータス
+COL_UPDATED_AT   = 14  # N: 最終確認日時
 
 STATUS_IN      = "✅ 在庫あり"
 STATUS_OUT     = "❌ 在庫なし"
