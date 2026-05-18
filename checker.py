@@ -93,39 +93,42 @@ def _fetch(url: str, timeout: int = 15) -> BeautifulSoup | None:
 
 
 def check_rakuten(url: str) -> str:
-    """
-    楽天: 在庫切れ時は「品切れ」「売り切れ」「ただいま品切れ」などが出る。
-    カートボタンの有無でも判定できる。
-    """
-    soup = _fetch(url)
-    if soup is None:
+    import os, re
+    app_id = os.environ.get("RAKUTEN_APP_ID", "")
+    if not app_id or not url:
         return STATUS_UNKNOWN
-
-    page_text = soup.get_text(separator=" ").lower()
-
-    # 在庫なしキーワード
-    out_keywords = ["品切れ", "売り切れ", "在庫なし", "soldout", "sold out", "ただいま品切れ"]
-    for kw in out_keywords:
-        if kw in page_text:
-            log.info(f"    楽天: 在庫なし（キーワード: {kw}）")
+    match = re.search(r'/([^/]+)/([^/?]+)', url)
+    if not match:
+        return STATUS_UNKNOWN
+    shop_url = match.group(1)
+    item_url = match.group(2)
+    try:
+        resp = requests.get(
+            "https://app.rakuten.co.jp/services/api/IchibaItem/Search/20170706",
+            params={
+                "applicationId": app_id,
+                "shopUrl": shop_url,
+                "itemUrl": item_url,
+                "hits": 1,
+                "format": "json",
+            },
+            timeout=15,
+        )
+        data = resp.json()
+        items = data.get("Items", [])
+        if not items:
             return STATUS_OUT
-
-    # カートボタンが存在するか（class名は変わることがある）
-    cart_btn = soup.select_one(
-        'input[value*="カートに入れる"], button[class*="addCart"], '
-        'a[class*="cart"], input[name*="purchase"]'
-    )
-    if cart_btn:
-        log.info("    楽天: 在庫あり（カートボタン検出）")
-        return STATUS_IN
-
-    # 楽天のvariantページで「在庫あり」文言を探す
-    if "在庫あり" in page_text or "残りわずか" in page_text:
-        return STATUS_IN
-
-    log.info("    楽天: 判定不能")
-    return STATUS_UNKNOWN
-
+        item = items[0].get("Item", {})
+        stock = item.get("availability", 0)
+        if stock == 1:
+            log.info("    楽天: 在庫あり（API）")
+            return STATUS_IN
+        else:
+            log.info("    楽天: 在庫なし（API）")
+            return STATUS_OUT
+    except Exception as e:
+        log.warning(f"    楽天API失敗: {e}")
+        return STATUS_UNKNOWN
 
 def check_yahoo(url: str) -> str:
     """
