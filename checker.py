@@ -97,7 +97,7 @@ def check_rakuten(url: str) -> str:
     app_id = os.environ.get("RAKUTEN_APP_ID", "")
     if not app_id or not url:
         return STATUS_UNKNOWN
-    match = re.search(r'/([^/]+)/([^/?]+)', url)
+    match = re.search(r'item\.rakuten\.co\.jp/([^/]+)/([^/?]+)', url)
     if not match:
         return STATUS_UNKNOWN
     shop_url = match.group(1)
